@@ -227,6 +227,7 @@ static void update_state(UIState *s) {
     scene.longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();
     if (scene.longitudinal_control) {
       scene.adjustable_follow_distance = sm["carParams"].getCarParams().getAdjustableFollow();
+      scene.conditional_experimental = sm["carParams"].getCarParams().getConditionalExperimentalMode();
       scene.experimental_mode_via_wheel = sm["carParams"].getCarParams().getExperimentalModeViaWheel();
     }
   }
@@ -286,8 +287,15 @@ void ui_live_update_params(UIState *s) {
   if (scene.adjustable_follow_distance && !scene.adjustable_follow_distance_car) {
     scene.adjustable_follow_distance_profile = params.getInt("AdjustableFollowDistanceProfile");
   }
+  if (scene.conditional_experimental) {
+    scene.conditional_status = params.getInt("ConditionalStatus");
+  }
   // FrogPilot variables that need to be updated whenever the user changes its toggle value
   if (params.getBool("FrogPilotTogglesUpdated")) {
+    if (scene.conditional_experimental) {
+      scene.conditional_speed = params.getInt("ConditionalExperimentalModeSpeed");
+      scene.conditional_speed_lead = params.getInt("ConditionalExperimentalModeSpeedLead");
+    }
     scene.screen_brightness = params.getInt("ScreenBrightness");
     scene.steering_wheel = params.getInt("SteeringWheel");
   }
