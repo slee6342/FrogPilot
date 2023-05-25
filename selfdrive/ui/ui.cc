@@ -227,12 +227,16 @@ static void update_state(UIState *s) {
     scene.longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();
     if (scene.longitudinal_control) {
       scene.adjustable_follow_distance = sm["carParams"].getCarParams().getAdjustableFollow();
+      scene.experimental_mode_via_wheel = sm["carParams"].getCarParams().getExperimentalModeViaWheel();
     }
   }
   if (sm.updated("carState")) {
     if (scene.adjustable_follow_distance && !scene.adjustable_follow_distance_car_checked) {
       scene.adjustable_follow_distance_car = sm["carState"].getCarState().getAdjustableFollowCar();
       scene.adjustable_follow_distance_car_checked = true;
+    }
+    if (scene.experimental_mode_via_wheel) {
+      scene.steering_wheel_car = sm["carState"].getCarState().getSteeringWheelCar();
     }
     if (scene.frog_signals) {
       scene.blindspot_left = sm["carState"].getCarState().getLeftBlindspot();

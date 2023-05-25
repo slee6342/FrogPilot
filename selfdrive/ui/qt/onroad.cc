@@ -90,7 +90,9 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   const auto &scene = uiState()->scene;
   static auto params = Params();
   static bool propagateEvent = true;
+  static bool recentlyTapped = false;
   const bool isAdjustableFollow = scene.adjustable_follow_distance && !scene.adjustable_follow_distance_car;
+  const bool isExperimentalModewheel = scene.experimental_mode_via_wheel && !scene.steering_wheel_car;
   const int x_offset = scene.mute_dm ? 50 : 250;
   const SubMaster &sm = *uiState()->sm;
   static bool rightHandDM = false;
@@ -112,6 +114,15 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   if (isAdjustableFollowDistanceClicked && isAdjustableFollow) {
     params.putInt("AdjustableFollowDistanceProfile", (scene.adjustable_follow_distance_profile % 3) + 1);
     propagateEvent = false;
+  // If the click wasn't on the button for adjustableFollowDistances, change the value of "ExperimentalMode" and "ExperimentalModeOverride"
+  } else if (recentlyTapped && isExperimentalModewheel) {
+    bool experimentalMode = params.getBool("ExperimentalMode");
+    params.putBool("ExperimentalMode", !experimentalMode);
+    recentlyTapped = false;
+    propagateEvent = true;
+  } else {
+    recentlyTapped = true;
+    propagateEvent = true;
   }
 
   // propagation event to parent(HomeWindow)
