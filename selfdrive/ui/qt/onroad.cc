@@ -232,6 +232,8 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
 
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size + 5, img_size + 5});
+  
+  // FrogPilot images
 }
 
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -289,6 +291,9 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // DM icon transition
   dm_fade_state = fmax(0.0, fmin(1.0, dm_fade_state+0.2*(0.5-(float)(dmActive))));
+
+  // FrogPilot properties
+  setProperty("experimentalMode", s.scene.experimental_mode);
 }
 
 void AnnotatedCameraWidget::drawHud(QPainter &p) {
@@ -439,6 +444,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   drawText(p, rect().center().x(), 290, speedUnit, 200);
 
   p.restore();
+
+  // FrogPilot status bar
+  if (true) {
+    drawStatusBar(p);
+  }
 }
 
 
@@ -513,7 +523,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 
   // paint path
   QLinearGradient bg(0, height(), 0, 0);
-  if (sm["controlsState"].getControlsState().getExperimentalMode()) {
+  if (experimentalMode) {
     // The first half of track_vertices are the points for the right side of the path
     // and the indices match the positions of accel from uiPlan
     const auto &acceleration = sm["uiPlan"].getUiPlan().getAccel();
@@ -732,4 +742,20 @@ void AnnotatedCameraWidget::showEvent(QShowEvent *event) {
 
   ui_update_params(uiState());
   prev_draw_t = millis_since_boot();
+}
+
+// FrogPilot widgets
+
+void AnnotatedCameraWidget::drawStatusBar(QPainter &p) {
+  p.setOpacity(1.0);
+  QRect statusBarRect(rect().left(), rect().bottom() - 59, rect().width(), 60);
+  p.fillRect(statusBarRect, QColor(0, 0, 0, 150));
+
+  QString statusText = "";
+
+  configFont(p, "Inter", 40, "Bold");
+  QRect textRect = p.fontMetrics().boundingRect(statusText);
+  textRect.moveCenter(statusBarRect.center());
+  p.setPen(Qt::white);
+  p.drawText(textRect, Qt::AlignCenter, statusText);
 }
