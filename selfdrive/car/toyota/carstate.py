@@ -30,6 +30,10 @@ class CarState(CarStateBase):
     self.acc_type = 1
     self.lkas_hud = {}
 
+    # FrogPilot variables
+    self.adjustable_follow = self.CP.adjustableFollow
+    self.distance_btn = 0
+
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
 
@@ -147,6 +151,19 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint != CAR.PRIUS_V:
       self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
 
+    # Adjustable follow distance function
+    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) and self.adjustable_follow:
+      # KRKeegan - Add support for toyota distance button
+      self.distance_btn = 1 if cp_cam.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
+      ret.distanceLines = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
+    if self.CP.carFingerprint in RADAR_ACC_CAR and self.adjustable_follow:
+      # These cars have the acc_control on car can
+      self.distance_btn = 1 if cp.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
+      ret.distanceLines = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
+    
+    # Disable the onroad widgets since they're not needed
+    ret.adjustableFollowCar = any(self.CP.carFingerprint in car for car in (TSS2_CAR, RADAR_ACC_CAR))
+
     return ret
 
   @staticmethod
@@ -245,6 +262,7 @@ class CarState(CarStateBase):
         ]
       signals += [
         ("FCW", "ACC_HUD"),
+        ("DISTANCE", 'ACC_CONTROL'),
       ]
       checks += [
         ("ACC_HUD", 1),
@@ -258,6 +276,9 @@ class CarState(CarStateBase):
       checks += [
         ("PRE_COLLISION", 33),
       ]
+
+    if CP.carFingerprint in (TSS2_CAR | RADAR_ACC_CAR):
+      signals.append(("DISTANCE_LINES", "PCM_CRUISE_SM"))
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 0)
 
@@ -284,6 +305,7 @@ class CarState(CarStateBase):
         ("FORCE", "PRE_COLLISION"),
         ("ACC_TYPE", "ACC_CONTROL"),
         ("FCW", "ACC_HUD"),
+        ("DISTANCE", 'ACC_CONTROL'),
       ]
       checks += [
         ("PRE_COLLISION", 33),
