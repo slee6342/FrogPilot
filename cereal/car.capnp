@@ -221,6 +221,7 @@ struct CarState {
   
   # FrogPilot CarStates
   adjustableFollowCar @47 :Bool;
+  alwaysOnLateral @48 :Bool;
   distanceLines @49 :UInt8;
   steeringWheelCar @50 :Bool;
 
@@ -499,6 +500,7 @@ struct CarParams {
 
   # FrogPilot CarParams
   adjustableFollow @72 :Bool;
+  alwaysOnLateral @73 :Bool;
   conditionalExperimentalMode @74 :Bool;
   experimentalModeViaWheel @75 :Bool;
   experimentalPersonalTune @76 :Bool;
